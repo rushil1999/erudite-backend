@@ -1,12 +1,14 @@
 import os
-from openai import OpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
+from langchain_xai import ChatXAI
+
 
 x_api_key = os.getenv("GROK_API_KEY")
 
-x_api_client = OpenAI(
-  api_key=x_api_key,
-  base_url="https://api.x.ai/v1",
+chat = ChatXAI(
+    xai_api_key=x_api_key,
+    model="grok-4-0709",
 )
+
