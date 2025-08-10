@@ -7,12 +7,6 @@ from app.service.logging import log_info,log_error
 async def generate_llm_response(prompt_input):
   log_info("User Data received {prompt_input}", prompt_input=prompt_input)
   try: 
-
-    # messages = [
-    #   SystemMessage("You are a Stock Advisor, give me all there is to know about the company with stock symbol {stock}, along with latest news and why the prices are moving. The answer will be used to convert to speech for someone who is driving and doesn't know anything about stocks"),
-    # ]
-
-
     response = chat.invoke(prompt_input)
     log_info("LLM response received {response}", response=response)
 

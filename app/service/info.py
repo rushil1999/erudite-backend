@@ -6,8 +6,8 @@ from fastapi import HTTPException
 
 
 async def get_stock_info(stocks):
+  log_info("Stock list received for basic information {stocks}", stocks=stocks)
   try:
-    log_info("Stock list received for basic information {stocks}", stocks=stocks)
     prompt = f"Given the stock ticker symbols {stocks}. Give a brief overview of about the companies, their stock and what they do. This informaiton is for someone who knows nothing about this company. Keep the answer short as it might be either read or converted to speech for the user. Seperate the each stock information with a * delimiter"
     response = await generate_llm_response(prompt)
     if not response.is_success:
@@ -28,8 +28,8 @@ async def get_stock_info(stocks):
 
 
 async def get_stock_news(stocks):
+  log_info("Stock list received for latest news {stocks}", stocks=stocks)
   try:
-    log_info("Stock list received for latest news {stocks}", stocks=stocks)
     prompt = f"Given the stock ticker symbols {stocks}. For each stock, give the latest news that lead to changes in stock prices, and what market conditions lead to those fluctutations. This informaiton is for someone who wants to stay updated about the latest news happening globally, specifically the ones that leads to price changes for a given stock. Keep the answer short as it might be either read or converted to speech for the user. Seperate the each stock information with a * delimiter"
     response = await generate_llm_response(prompt)
     if not response.is_success:

@@ -1,0 +1,28 @@
+
+import asyncio
+import os
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
+from dotenv import load_dotenv
+from app.service.logging import log_info, log_error
+from fastapi import HTTPException
+
+# Load environment variables from .env
+load_dotenv()
+
+
+# Create a new client and connect to the server
+uri = os.getenv("MONGODB_URI")
+store = MongoClient(uri, server_api=ServerApi('1'))
+db = store['erudite']
+collection = db['stock_list']
+
+
+# Send a ping to confirm a successful connection
+try:
+    store.admin.command('ping')
+    log_info("Pinged your deployment. You successfully connected to MongoDB!")
+    
+except Exception as e:
+    log_error("Error establishing database connection, {error}", error={str(e)})
+    raise HTTPException(status_code=500, detail=f"Error establishing database connection: {str(e)}")
