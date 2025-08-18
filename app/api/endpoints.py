@@ -2,6 +2,9 @@ from typing import Union
 from fastapi import APIRouter,HTTPException
 from app.service.process import process_news, process_info
 from app.service.list import get_stocks_in_list 
+# from app.service.polygon_integration import get_polygon_data
+from typing import List, Optional
+from fastapi import FastAPI, Query
 
 
 router = APIRouter()
