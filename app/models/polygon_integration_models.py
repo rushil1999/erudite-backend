@@ -9,9 +9,7 @@ class Polygon_Insight_Model(BaseModel):
   sentiment_reasoning: str
 
 class Parsed_Article_Model(BaseModel):
-  id: str
   title: str
-  article_url: str
   description: str
   sentiment_reasoning: str
   sentiment: str
