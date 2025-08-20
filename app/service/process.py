@@ -56,7 +56,6 @@ def get_tickers_from_list(stock_list):
 
 
 def parse_articles(ticker, ticker_data):
-  log_info("Input Received")
   article_list = []
   try:
     for article in ticker_data:

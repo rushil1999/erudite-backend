@@ -21,13 +21,6 @@ async def get_stocks_in_list(name):
     raise HTTPException(status_code=500, detail=f"Error fetching stock list list: {str(e)}")
 
 
-
-
-  except Exception as e:
-    log_error("Error getting tickers stock list: {stock_list}, due to {error}",stock_list=stock_list, error=str(e) )
-    raise HTTPException(status_code=500, detail=f"Error fetching stock list list: {str(e)}")
-
-
 def parse_stock_info(data):
   stock_info_list = []
   for obj in data:

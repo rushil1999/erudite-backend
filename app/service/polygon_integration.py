@@ -32,11 +32,10 @@ async def get_ticker_specific_data(ticker: str):
     response = httpx.get(url, headers=headers)
     if response.status_code != httpx.codes.OK :
         log_error("Error fetching data from Polygon API, status code: {status_code}", status_code=response.status_code )
-    print(response)
     json_data = response.json()
     polygon_response = Polygon_Response(**json_data)
     log_info("Called Polygon API to get data: {polygon_response}", polygon_response=polygon_response)
-    if len(polygon_response.results) == 0 :
+    if len(polygon_response.results) == 0:
         return Service_Response_Model(data=[], is_success=False, message="Cannot fetch news data")
     return Service_Response_Model(data=polygon_response.results, is_success=True)
   except Exception as e:
