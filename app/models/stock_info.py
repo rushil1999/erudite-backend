@@ -5,5 +5,5 @@ from typing import Any, Optional
 class Stock_Info_Model(BaseModel):
     name: str
     ticker: str
-    info: Optional[str] = None
+    info: Optional[Any] = None
     

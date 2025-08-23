@@ -6,6 +6,7 @@ from app.service.polygon_integration import get_ticker_specific_data
 from app.models.polygon_integration_models import Polygon_Article_Model, Parsed_Article_Model
 from app.models.response_models import Service_Response_Model
 from app.service.llm import generate_llm_response
+import json
 
 async def process_news(list_name):
   log_info("List received to process news {list_name}", list_name=list_name)
@@ -30,7 +31,9 @@ async def process_news(list_name):
 
     llm_prompt = generate_llm_prompt(stock_article_map)
     llm_response = await generate_llm_response(llm_prompt)
-    return Service_Response_Model(data=llm_response.data, is_success=True)
+    llm_object = json.loads(llm_response.data)
+
+    return Service_Response_Model(data=llm_object, is_success=True)
   except Exception as e:
     log_error("Error processing news for list: {list_name}, due to {error}",list_name=list_name, error=str(e) )
     raise HTTPException(status_code=500, detail=f"Error fetching stock list: {str(e)}")
