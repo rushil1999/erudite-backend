@@ -1,19 +1,19 @@
 from pydantic import BaseModel
 from typing import Any, Optional, List
 
-
-
 class Polygon_Insight_Model(BaseModel):
   ticker: str
   sentiment: str
   sentiment_reasoning: str
 
-class Parsed_Article_Model(BaseModel):
+class Article_Model(BaseModel):
   title: str
   description: str
   sentiment_reasoning: str
   sentiment: str
   ticker: str
+  article_url: str
+  name: str
 
 class Polygon_Article_Model(BaseModel):
   id: str

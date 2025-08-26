@@ -3,10 +3,13 @@ from app.service.info import get_stock_news, get_stock_info
 from app.service.logging import log_info, log_error
 from fastapi import HTTPException
 from app.service.polygon_integration import get_ticker_specific_data
-from app.models.polygon_integration_models import Polygon_Article_Model, Parsed_Article_Model
+from app.models.polygon_integration_models import Polygon_Article_Model, Article_Model
 from app.models.response_models import Service_Response_Model
+from app.models.stock_info import Stock_Info_Model
 from app.service.llm import generate_llm_response
 import json
+from datetime import datetime, timedelta, date
+from app.service.mongodb import db, summaries
 
 async def process_news(list_name):
   log_info("List received to process news {list_name}", list_name=list_name)
@@ -14,24 +17,41 @@ async def process_news(list_name):
     response = await get_stocks_in_list(list_name)
     if not response.is_success:
       return response
+    # 1. Get a ticker list from the list name
     ticker_list = get_tickers_from_list(response.data)
 
     stock_article_map = {}
+    llm_article_map = {} # Similar to stock article map, but with article list converted to json string
     for ticker in ticker_list:
+      # 2. Get Ticker specific data
       ticker_specific_response = await get_ticker_specific_data(ticker)
       if not ticker_specific_response.is_success:
         log_error("error getting stock data from polygon integration for ticker: {ticker}", ticker=ticker)
         continue
-      parsed_article_response = parse_articles(ticker, ticker_specific_response.data)
-      if not parsed_article_response.is_success:
-        raise HTTPException(status_code=500, detail=f"Error parsing stock list: {str(e)}")
 
-      article_list = parse_articles(ticker, ticker_specific_response.data).data
-      stock_article_map[ticker] = article_list
+      stock_article_map[ticker] = ticker_specific_response.data
 
-    llm_prompt = generate_llm_prompt(stock_article_map)
+      json_string = json.dumps(ticker_specific_response.data)
+      llm_article_map[ticker] = json_string
+
+    if len(stock_article_map) == 0:
+      log_info("No data could be mapped. Returning")
+      return Service_Response_Model(data=[], is_success=False)
+
+    llm_prompt = generate_llm_prompt(llm_article_map)
     llm_response = await generate_llm_response(llm_prompt)
-    llm_object = json.loads(llm_response.data)
+    llm_object = json.loads(llm_response.data) #Map containing Key as the ticker and summary as the value
+    
+    for ticker in ticker_list:
+      summary = llm_object[ticker]
+      date_string = date.today().strftime("%Y-%m-%d")
+      log_info("saving data for ticker: {ticker} with summary: {summary}", ticker=ticker, summary=summary)
+
+      stock_info = Stock_Info_Model(ticker=ticker, info=summary, timestamp=date_string)
+      print("Something")
+      data_dump = stock_info.model_dump(by_alias=True)
+      result = summaries.insert_one(data_dump).inserted_id
+      log_info("inserted summary for ticker with symbol: {ticker}, and mongodb id: {result}", ticker=ticker, result=result)
 
     return Service_Response_Model(data=llm_object, is_success=True)
   except Exception as e:
@@ -57,23 +77,6 @@ def get_tickers_from_list(stock_list):
     ticker_list.append(stock.ticker)
   return ticker_list
 
-
-def parse_articles(ticker, ticker_data):
-  article_list = []
-  try:
-    for article in ticker_data:
-      for index in range(len(article.insights)):
-        if article.insights[index].ticker == ticker:
-          sentiment_reasoning = article.insights[index].sentiment_reasoning
-          sentiment = article.insights[index].sentiment
-          break
-      parsed_article = Parsed_Article_Model(title=article.title, description=article.description, sentiment_reasoning=sentiment_reasoning, sentiment=sentiment, ticker=ticker)
-      article_list.append(parsed_article)
-    return Service_Response_Model(data=article_list, is_success=True)
-  except Exception as e:
-    log_error("Error for input: {input}, due to {error}",input=ticker_data, error=str(e) )
-    raise HTTPException(status_code=500, detail=f"Error fetching stock list: {str(e)}")
-    
     
 def generate_llm_prompt(stock_article_map):
   prompt = f"You are a news summarizer. Summarize the news for a layman person, keeping it concise but not too short and just return the response in json format. Here is the json objects for articles with their title, description, and sentiment attached which fetched from 3rd party news provider. {stock_article_map}"

@@ -16,6 +16,7 @@ uri = os.getenv("MONGODB_URI")
 store = MongoClient(uri, server_api=ServerApi('1'))
 db = store['erudite']
 collection = db['stock_list']
+summaries = db['summaries']
 
 
 # Send a ping to confirm a successful connection
