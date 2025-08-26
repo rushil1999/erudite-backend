@@ -52,17 +52,16 @@ def parse_polygon_articles(ticker: str, polygon_response: Polygon_Response) -> L
   for article in polygon_response.results:
     sentiment = ''
     sentiment_reasoning = ''
-    print("Article", article)
     for insight in article.insights:
       if insight.ticker == ticker:
         sentiment_reasoning = insight.sentiment_reasoning
-        sentiment = article.insight.sentiment
+        sentiment = insight.sentiment
         break
 
     article = Article_Model(title=article.title, article_url=article.article_url, description=article.description, ticker=ticker, sentiment=sentiment, sentiment_reasoning=sentiment_reasoning)
 
-    parsed_article.append(article)
+    parsed_articles.append(article)
 
-  return parsed_article
+  return parsed_articles
      
 

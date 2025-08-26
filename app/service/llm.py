@@ -5,12 +5,9 @@ from app.service.logging import log_info,log_error
 
 
 async def generate_llm_response(prompt_input):
-  log_info("User Data received {prompt_input}", prompt_input=prompt_input)
+  log_info("User Data received for LLM")
   try: 
     response = chat.invoke(prompt_input)
-    log_info("LLM response received {response}", response=response)
-
-
     if len(response.content) > 0:
       log_info("Response generate from llm: {result}", result=response.content)
       return Service_Response_Model(data=response.content, is_success=True)

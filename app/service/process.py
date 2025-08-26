@@ -10,6 +10,7 @@ from app.service.llm import generate_llm_response
 import json
 from datetime import datetime, timedelta, date
 from app.service.mongodb import db, summaries
+from fastapi.encoders import jsonable_encoder
 
 async def process_news(list_name):
   log_info("List received to process news {list_name}", list_name=list_name)
@@ -31,7 +32,8 @@ async def process_news(list_name):
 
       stock_article_map[ticker] = ticker_specific_response.data
 
-      json_string = json.dumps(ticker_specific_response.data)
+      jsonable_dict = jsonable_encoder(ticker_specific_response.data)
+      json_string = json.dumps(jsonable_dict)
       llm_article_map[ticker] = json_string
 
     if len(stock_article_map) == 0:
@@ -43,8 +45,9 @@ async def process_news(list_name):
     llm_object = json.loads(llm_response.data) #Map containing Key as the ticker and summary as the value
     
     for ticker in ticker_list:
+      print("Here", llm_object)
       summary = llm_object[ticker]
-      date_string = date.today().strftime("%Y-%m-%d")
+      date_string = "2025-23-08"
       log_info("saving data for ticker: {ticker} with summary: {summary}", ticker=ticker, summary=summary)
 
       stock_info = Stock_Info_Model(ticker=ticker, info=summary, timestamp=date_string)
@@ -56,7 +59,7 @@ async def process_news(list_name):
     return Service_Response_Model(data=llm_object, is_success=True)
   except Exception as e:
     log_error("Error processing news for list: {list_name}, due to {error}",list_name=list_name, error=str(e) )
-    raise HTTPException(status_code=500, detail=f"Error fetching stock list: {str(e)}")
+    raise HTTPException(status_code=500, detail=f"Error processing stock list: {str(e)}")
     
 
 async def process_info(list_name):
@@ -79,5 +82,5 @@ def get_tickers_from_list(stock_list):
 
     
 def generate_llm_prompt(stock_article_map):
-  prompt = f"You are a news summarizer. Summarize the news for a layman person, keeping it concise but not too short and just return the response in json format. Here is the json objects for articles with their title, description, and sentiment attached which fetched from 3rd party news provider. {stock_article_map}"
+  prompt = f"You are a news summarizer. Summarize the news for a layman person, keeping it concise but not too short and just return the response in json format with key as the ticker and value as the summary. Here is the json objects for articles with their title, description, and sentiment attached which fetched from 3rd party news provider. {stock_article_map}"
   return prompt

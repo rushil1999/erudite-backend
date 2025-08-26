@@ -13,7 +13,7 @@ class Article_Model(BaseModel):
   sentiment: str
   ticker: str
   article_url: str
-  name: str
+  name: Optional[str]= None
 
 class Polygon_Article_Model(BaseModel):
   id: str
