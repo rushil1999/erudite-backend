@@ -45,13 +45,11 @@ async def process_news(list_name):
     llm_object = json.loads(llm_response.data) #Map containing Key as the ticker and summary as the value
     
     for ticker in ticker_list:
-      print("Here", llm_object)
       summary = llm_object[ticker]
-      date_string = "2025-23-08"
-      log_info("saving data for ticker: {ticker} with summary: {summary}", ticker=ticker, summary=summary)
+      date_string = datetime.now().strftime("%Y-%m-%d")
+      log_info("saving data for ticker: {ticker}", ticker=ticker)
 
       stock_info = Stock_Info_Model(ticker=ticker, info=summary, timestamp=date_string)
-      print("Something")
       data_dump = stock_info.model_dump(by_alias=True)
       result = summaries.insert_one(data_dump).inserted_id
       log_info("inserted summary for ticker with symbol: {ticker}, and mongodb id: {result}", ticker=ticker, result=result)
