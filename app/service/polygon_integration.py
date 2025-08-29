@@ -21,7 +21,7 @@ async def get_ticker_specific_data(ticker: str):
   log_info("Received Ticker Input: {ticker}", ticker=ticker)
   try:
     key = get_api_key()
-    current_date = date.today() - timedelta(days=1)
+    current_date = date.today()
     current_date = current_date.strftime('%Y-%m-%d')
     host = os.getenv("POLYGON_NEWS_URL")
     url = f"{host}?ticker={ticker}&published_utc={current_date}&order=asc&limit=10&sort=published_utc&apiKey={key}"
